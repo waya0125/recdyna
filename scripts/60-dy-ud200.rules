@@ -1,0 +1,2 @@
+# Dynaconnective DY-UD200 (1c11:1004)
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="1c11", ATTR{idProduct}=="1004", MODE="0660", GROUP="plugdev"

@@ -1,0 +1,20 @@
+# ライセンス
+
+このリポジトリは、複数の出典・ライセンスのコンポーネントで構成されています。
+ファイルごとの著作権表示は、各ファイルの先頭および以下の表に記載しています。
+
+| 対象 | 著作権者・出典 | ライセンス | 全文 |
+|---|---|---|---|
+| `internal/b25/`・`internal/multi2/`・`internal/bcas/`（arib25 の Go 移植） | arib25: 茂木 和洋（MOGI, Kazuhiro） | 原著作者の免責条件に同意した二次的著作物について権利不行使 | [LICENSES/arib25.txt](LICENSES/arib25.txt) |
+| そのほかのすべて（`cmd/recdyna/`、`internal/dyud200/`、`internal/usbfs/`、`internal/pcsc/`、`internal/tscheck/`、試験・スクリプト・文書） | Copyright (c) 2026 waya0125 | MIT | [LICENSES/MIT.txt](LICENSES/MIT.txt) |
+
+## プロトコル・設計の出典
+
+- **DY-UD200 USB 制御プロトコル・コマンド仕様・FW 1.0.5-2 再初期化・TS XOR 復号・内蔵 B-CAS 中継**:
+  有志の Windows 用ドライバー **BonDriver_dyud v8.5.3**（2010 年公開、旧配布元 `http://dyud200.zxq.net/`、Wayback Machine 2013-05-27 アーカイブ）の公開ソースコードを参考に Go で再実装しています。AES 演算は Go 標準ライブラリ（`crypto/aes`）を使用しています。
+- **初期不安定区間の安定化フィルター（`Settler`）**:
+  **coax**（`https://github.com/Till0196/coax`）で示された選局直後の過渡パケット除去の考え方を参考に独自実装しています。
+- **Linux `usbfs` / `pcscd` / `b25` 基盤**:
+  **recut100b**（`https://github.com/waya0125/recut100b`、Copyright (c) 2026 waya0125、MIT）と共通の純 Go 実装を使用しています。
+
+メーカーのファームウェアおよびバイナリは、このリポジトリに含みません。
