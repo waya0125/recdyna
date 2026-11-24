@@ -1,36 +1,32 @@
 # recdyna
 
-ダイナコネクティブ（Dynaconnective）製 USB 地上デジタルチューナー向けの Linux 録画コマンドです。  
-cgo・libusb・libpcsclite を使わず、Linux の `usbfs` と `pcscd` と直接通信する単一の静的バイナリとして動作します。
+ダイナコネクティブ（Dynaconnective）の USB 地デジチューナー DY-UD200 を Linux で使う、録画コマンドです。  
+Go だけで書いた 1 つの静的バイナリで、cgo・libusb・libpcsclite を使わず、Linux の `usbfs` と `pcscd` に直接つなぎます。  
+本体のスロットに挿した B-CAS カードで、スクランブルを外して録画できます（`--b25`）。
 
 ## 対応機種
 
-| 機種 | USB ID | 放送波 | 状態 | 詳細 |
+| 機種 | USB ID | 放送波 | B-CAS | 詳細・動作確認 |
 |---|---|---|---|---|
-| Dynaconnective **DY-UD200** | `1c11:1004` | 地上デジタル（ISDB-T） | 実機動作確認済み（FW `1.0.5-2`） | [docs/DY-UD200.md](docs/DY-UD200.md) |
+| Dynaconnective DY-UD200 | `1c11:1004` | 地デジ・CATV・ワンセグ（1 チューナー） | 本体のスロット（外付けのカードリーダーも可） | [docs/DY-UD200.md](docs/DY-UD200.md) |
 
-※他機種への拡張を見据え、`--model` オプションと機種別パッケージ構成（`internal/dyud200` 等）を採用しています。
+ほかの機種にも広げられるように、`--model` オプションと、機種ごとのパッケージ（`internal/dyud200` など）に分けています。
 
-## 主な機能
+## 関連プロジェクト
 
-- **純 Go 実装（`CGO_ENABLED=0`）**: 外部共有ライブラリ不要、Linux 環境や Docker コンテナ（Mirakurun 等）へそのまま配置可能
-- **地上デジタル選局**: UHF（13〜62ch）・VHF（1〜12ch）・CATV パススルー（C13〜C63ch）、ワンセグ（`--oneseg`）対応
-- **FW `1.0.5-2` 自動検出・再初期化**: 初期ファームウェアおよび再販品 FW（`1.0.5-2`）の両方に対応
-- **TS XOR 復号対応**: 無改造 FW のセッション XOR を自動復号（パッチ済み FW 向けに `--no-xor` オプションあり）
-- **内蔵 B-CAS スロットによる ARIB STD-B25 復号（`--b25`）**: 本体スロットを USB 経由で直接制御（外付けリーダーは `--pcsc` で利用可能）
-- **選局直後の安定化フィルター（`Settler`）**: 選局直後、復調器・FIFO が落ち着くまでの乱れ（同期崩れ・TEI・CC 飛び）を自動で除去し、ゼロドロップで出力を開始（`--no-settle` で無効化可）
+- Windows（TVTest・EDCB）で使う BonDriver: [BonDriver_Dyna](https://github.com/waya0125/BonDriver_Dyna)
+- 手元のチューナーの動作確認の一覧: [チューナー動作確認一覧](https://waya0125.github.io/tuners/)
 
-## 動作確認（2026-11-22 時点）
+## 必要なもの
 
-| 検証項目 | 結果 |
-|---|---|
-| 単体テスト（AES テストベクタ・XOR・Settler・B25・MULTI2・B-CAS・PC/SC） | 全パッケージ PASS（`go test ./...`） |
-| 実機初期化・FW 検出（Ubuntu 26.04 / amd64） | DY-UD200 FW `1.0.5-2` を検出・再初期化、シリアル番号取得成功 |
-| 地デジ 5 チャンネル（ch 21・22・24・25・26、各 10 秒、`--b25 --strip`） | 全 5 チャンネルでドロップ 0・TEI 0・同期崩れ 0・スクランブル残り 0・PCR 飛び 0 |
-| 60 秒連続録画（ch 21、`--b25 --strip`、内蔵 B-CAS） | 688,416 パケット（17.21 Mbps）、ドロップ 0・TEI 0・同期崩れ 0・スクランブル残り 0・PCR 飛び 0 |
-| Mirakurun 経由 30 分同時撮り比べ（ch 21、対 Sony CECH-ZD1 J） | 20,418,150 パケット（1,795.0 秒・17.11 Mbps）、ドロップ 4 回（率 2.0e-7）・TEI 0・同期崩れ 0・スクランブル残り 0・PCR 飛び 0 |
+- B-CAS カード（本体のスロットに挿す。外付けのカードリーダーを使う場合は `pcscd`）
+- ファームウェアやメーカーのドライバーは不要です。
 
-詳細な仕様・計測結果は [docs/DY-UD200.md](docs/DY-UD200.md) を参照してください。
+メーカーは 2010 年 10 月に自己破産を申請し、公式のサイトはなくなっています。  
+機器の情報は次の有志の資料にあります。
+
+- 有志の BonDriver_dyud の配布ページ（[Wayback Machine](http://web.archive.org/web/20130527152129/http://dyud200.zxq.net/)）
+- 有志のまとめ Wiki「[USB地デジチューナ DY-UD200 まとめwiki](https://w.atwiki.jp/dy-ud200/)」
 
 ## ビルド
 
@@ -40,16 +36,16 @@ Go 1.24 以上が必要です。
 CGO_ENABLED=0 go build -o bin/ ./cmd/...
 ```
 
-ホストに Go を入れずに Docker でビルド・テストすることもできます。
+手元に Go を入れない場合は、Docker の Go でビルド・テストできます。
 
 ```bash
 scripts/go.sh test ./...
 scripts/go.sh build -o bin/ ./cmd/...
 ```
 
-## 準備（udev ルール）
+## 準備
 
-一般ユーザー（`plugdev` グループ）から DY-UD200 を開けるように udev ルールを配置します。
+一般ユーザー（`plugdev` グループ）から DY-UD200 を開けるように、udev ルールを置きます。
 
 ```bash
 sudo cp scripts/60-dy-ud200.rules /etc/udev/rules.d/
@@ -108,6 +104,13 @@ bin/recdyna --check 21
   command: /usr/local/bin/recdyna --b25 --strip <channel> - -
   isDisabled: false
 ```
+
+## 注意事項
+
+- 地デジ専用です。BS・CS は受けられません。
+- `--card-log` の記録には鍵の情報が入ります。人に渡さないでください。
+- 選局の直後、約 1 秒は TS が乱れます。  
+  既定では安定するまで出力を待つので、録画の頭が 1 秒あまり遅れます（`--no-settle` で無効にできます）。
 
 ## 出典・ライセンス
 
