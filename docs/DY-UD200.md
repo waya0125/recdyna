@@ -14,6 +14,7 @@
 | 公式ページ | なし（メーカーは 2010 年 10 月に自己破産を申請） |
 | 有志の資料 | BonDriver_dyud の配布ページ（[Wayback Machine](http://web.archive.org/web/20130527152129/http://dyud200.zxq.net/)）・[まとめ Wiki](https://w.atwiki.jp/dy-ud200/) |
 
+本ドキュメントでは、DY-UD200 の USB 制御プロトコル、暗号化・復号仕様（制御コマンドの AES-ECB および TS の XOR）、内蔵 B-CAS スロット制御、Linux 実機での検証結果をまとめています。  
 プロトコル仕様は、有志の Windows 用ドライバー **BonDriver_dyud v8.5.3**（2010 年公開、旧配布元 `http://dyud200.zxq.net/`、Wayback Machine 2013-05-27 アーカイブ）のソースコードを参考に Go で再実装しています。
 
 ## 2. 準備
@@ -138,14 +139,14 @@ bin/recdyna --b25 --strip 21 - -                # 標準出力に流し続ける
 
 #### TS パケットの XOR 復号
 
-無改造の純正ファームウェアでは、TS ストリーム内の対象パケットに対し、セッション XOR 鍵から生成した 256 バイト LUT による XOR 変換が施されます（[internal/dyud200/crypto.go](../internal/dyud200/crypto.go)）。
+無改造の純正ファームウェアでは、選局時にコマンド `0x30` で設定した 32 バイトのセッション XOR 鍵から 256 バイトの LUT を生成し、TS ストリーム内の対象パケットを XOR 復号します（[internal/dyud200/crypto.go](../internal/dyud200/crypto.go)）。
 
-復号条件（`BonDriver_dyud.cpp` 準拠）：
+復号対象となる条件（`BonDriver_dyud.cpp` 準拠）：
 - `0x0010 <= PID < 0x1fff`
 - `transport_scrambling_control >= 2`
 - `transport_priority == 1`（復号時に `0` へクリアし、ペイロード先頭 128 バイト `[4..131]` を変換）
 
-パッチ済みファームウェア等で XOR を使用しない場合は `--no-xor` で無効化できます。
+パッチ済みファームウェアなどで XOR がかからない場合は、`--no-xor` で鍵設定と復号を無効化できます。
 
 #### USB 受信と選局直後の過渡期対策（`Settler`）
 
