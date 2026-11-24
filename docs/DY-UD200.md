@@ -14,7 +14,7 @@
 | 公式ページ | なし（メーカーは 2010 年 10 月に自己破産を申請） |
 | 有志の資料 | BonDriver_dyud の配布ページ（[Wayback Machine](http://web.archive.org/web/20130527152129/http://dyud200.zxq.net/)）・[まとめ Wiki](https://w.atwiki.jp/dy-ud200/) |
 
-本ドキュメントでは、DY-UD200 の USB 制御プロトコル、暗号化・復号仕様（制御コマンドの AES-ECB および TS の XOR）、内蔵 B-CAS スロット制御、Linux 実機での検証結果をまとめています。  
+本ドキュメントでは DY-UD200 の USB 制御プロトコル・暗号化と復号の仕様（制御コマンドの AES-ECB と TS の XOR）・内蔵 B-CAS スロット制御・Linux 実機での検証結果をまとめています。  
 プロトコル仕様は、有志の Windows 用ドライバー **BonDriver_dyud v8.5.3**（2010 年公開、旧配布元 `http://dyud200.zxq.net/`、Wayback Machine 2013-05-27 アーカイブ）のソースコードを参考に Go で再実装しています。
 
 ## 2. 準備
