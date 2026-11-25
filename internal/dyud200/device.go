@@ -52,6 +52,16 @@ func (f FirmwareVersion) Uint32() uint32 {
 	return uint32(f.Major)<<24 | uint32(f.Minor1)<<16 | uint32(f.Minor2)<<8 | uint32(f.Minor3)
 }
 
+// NeedsNewInit は新ファーム（1.0.5-2 / 1.0.5-3 等）用の再初期化シーケンスが必要かを返す。
+func (f FirmwareVersion) NeedsNewInit() bool {
+	return f.Major == 1 && f.Minor1 == 0 && f.Minor2 == 5 && f.Minor3 >= 2
+}
+
+// IsXorBypassed は TS の XOR 暗号化が無効化された既知カスタムファームウェア（1.0.5-3）かを返す。
+func (f FirmwareVersion) IsXorBypassed() bool {
+	return f.Uint32() == 0x01000503
+}
+
 // Device は開いた DY-UD200 チューナー。
 type Device struct {
 	USB    *usbfs.Device
@@ -199,9 +209,9 @@ func (d *Device) Init() error {
 	d.FW = fv
 	fmt.Fprintf(d.Log, "DY-UD200 firmware: %s\n", fv)
 
-	// FW 1.0.5-2 は新ファーム用の初期化列でやり直す
-	if fv.Uint32() == 0x01000502 {
-		fmt.Fprintln(d.Log, "FW 1.0.5-2 detected: re-initializing with new init sequence")
+	// FW 1.0.5-2 / 1.0.5-3 は新ファーム用の初期化列でやり直す
+	if fv.NeedsNewInit() {
+		fmt.Fprintf(d.Log, "FW %s detected: re-initializing with new init sequence\n", fv)
 		if _, err := d.SendCommand(cmdClose, 2); err != nil {
 			return fmt.Errorf("再初期化前クローズ失敗: %w", err)
 		}

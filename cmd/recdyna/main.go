@@ -167,8 +167,14 @@ func run(o *options, log io.Writer) error {
 		return err
 	}
 
+	enableXOR := !o.noXOR
+	if enableXOR && dev.FW.IsXorBypassed() {
+		enableXOR = false
+		fmt.Fprintf(log, "FW %s detected: disabling TS XOR decryption automatically\n", dev.FW)
+	}
+
 	if o.check {
-		if err := dev.Tune(o.freqKHz, o.oneSeg, !o.noXOR); err != nil {
+		if err := dev.Tune(o.freqKHz, o.oneSeg, enableXOR); err != nil {
 			return err
 		}
 		lockStatus, locked := dev.WaitLock(5 * time.Second)
@@ -195,7 +201,7 @@ func run(o *options, log io.Writer) error {
 		}
 	}
 
-	if err := dev.Tune(o.freqKHz, o.oneSeg, !o.noXOR); err != nil {
+	if err := dev.Tune(o.freqKHz, o.oneSeg, enableXOR); err != nil {
 		return err
 	}
 
