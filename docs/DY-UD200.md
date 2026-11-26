@@ -175,6 +175,11 @@ TS 受信中も B-CAS の ECM 処理（約 2 秒おき）や定期処理でこ�
 
 専用のクロスプラットフォーム管理ツール **[dynafw](https://github.com/waya0125/dynafw)**（Linux `usbfs` / Windows `WinUSB` 対応）を使って、純正 `1.0.5-2` の抽出・`1.0.5-3` の生成・実機への書き込み・純正 `1.0.5-2` へのロールバックを同じ手順で行えます。
 
+- **純正ファームウェア（`1.0.5-2`）の入手元**:  
+  メーカー公式の最終版インストーラー `DAWIN DTV_setup_1.0.0.8.zip`（2009 年 11 月公開、FW `1.0.5-2` 収録）が [Wayback Machine（2010-11-28 アーカイブ）](https://web.archive.org/web/20101128030533id_/http://dynaconnective.co.jp/support/download/ud200/DAWIN%20DTV_setup_1.0.0.8.zip) に残っています。
+- **抽出時の注意（Windows のみ）**:  
+  `DAWIN DTV_setup_1.0.0.8.exe` をインストール（ドライバ不要）するか 7-Zip 等でローカルドライブへ展開し、同梱の `vcredist_x86.exe`（VC++ 2005 ランタイム）を入れた状態で `dynafw extract` を実行します（`DAWIN DTV.exe` が Themida でパックされているため、Windows 上で展開後メモリから抽出する必要があります）。
+
 ```bash
 # 1. 純正 1.0.5-2 の抽出（Windows のみ。DAWIN DTV 1.0.0.8 と vcredist_x86 が必要）
 dynafw extract "DAWIN DTV.exe" DY-UD200_firmware_1.0.5-2.bin
